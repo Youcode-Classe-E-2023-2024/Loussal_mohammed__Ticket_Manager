@@ -54,7 +54,7 @@ class Department extends Database {
      * @param mixed  $colValue Value for identification
      * @throws Exception
      */
-    public function softDeleteDepartmentByName($colName, $colValue) {
+    public function softDeleteDepartment($colName, $colValue) {
     // Check Params Validation
     $paramValidation = $this->checkParam($colName);
     // Check if the department is already deleted
@@ -62,8 +62,8 @@ class Department extends Database {
 
         if ($paramValidation === 1) {
             if ($existingState === false) {
-                // Handle the case where the department doesn't exist
-                // (you might throw an exception or handle it as needed)
+            // Handle the case where the department doesn't exist
+            // (you might throw an exception or handle it as needed)
             } elseif (!$existingState['supprimer']) {
                 $this->query('UPDATE ' . $this->departmentTable . '
                           SET supprimer = true
@@ -154,5 +154,5 @@ $depa = new Department();
 $name = $depa->listDepartments();
 print_r($name);
 $depa->update('name', 'Testing', 'id', 2);
-$depa->softDeleteDepartmentByName('name', 'Testing');
+$depa->softDeleteDepartment('id', '2');
 print_r($name);
