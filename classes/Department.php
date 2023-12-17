@@ -4,40 +4,42 @@ include_once '../config/config.php';
 class Department extends Database {
     private $departmentTable = "hd_departments";
 
-    /** List All Departmens
+    /** List All Departmens:
      * @return array
      */
-    public function listDepartment()
+    public function listDepartments()
     {
-        $this->query('SELECT name FROM ' . $this->departmentTable . ' WHERE id = 2');
+        $this->query('SELECT * FROM ' .$this->departmentTable .' WHERE supprimer = false');
         $this->execute();
         $departments = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return $departments;
     }
 
-    public function addDepartment($department) {
-        $this->query('');
-    }
-
-    /** Update department
-     * @param $valueCol string
-     * @param $value string|int|bool|null
-     * @param $identifierCol string
-     * @param $identifier string|int|bool|null
+    /** ADD New Department:
+     * @param string $name
+     * @param int $status
      * @return void
      */
+    public function addDepartment($name, $status) {
+        $this->query('INSERT INTO '. $this->departmentTable .' (name, status) 
+            VALUES(:name, :status)');
+        $this->bind('name', $name);
+        $this->bind('status', $status);
+        $this->execute();
+    }
 
-    /** Update Department Details
-     * @param $valueCol
-     * @param $value
-     * @param $identifierCol
-     * @param $identifier
+    /** Update Department Details:
+     * @param string $valueCol
+     * @param mixed $value
+     * @param string $identifierCol
+     * @param mixed $identifier
      * @return void
      * @throws Exception
      */
     public function update($valueCol, $value, $identifierCol, $identifier) {
-        if($this->checkParam($valueCol, $identifierCol)) {
+        $paramValidation = $this->checkParam($valueCol, $identifierCol);
+        if($paramValidation) {
             $this->query('UPDATE '. $this->departmentTable .'
                         SET '. $valueCol .' = :value 
                         WHERE '. $identifierCol .' = :identifier');
@@ -47,6 +49,46 @@ class Department extends Database {
         }
         }
 
+    /** Soft Delete Department:
+     * @param string $colName Column name for identification
+     * @param mixed  $colValue Value for identification
+     * @throws Exception
+     */
+    public function softDeleteDepartmentByName($colName, $colValue) {
+    // Check Params Validation
+    $paramValidation = $this->checkParam($colName);
+    // Check if the department is already deleted
+    $existingState = $this->getDepartmentState($colName, $colValue);
+
+        if ($paramValidation === 1) {
+            if ($existingState === false) {
+                // Handle the case where the department doesn't exist
+                // (you might throw an exception or handle it as needed)
+            } elseif (!$existingState['supprimer']) {
+                $this->query('UPDATE ' . $this->departmentTable . '
+                          SET supprimer = true
+                          WHERE ' . $colName . ' = :colValue');
+
+                $this->bind(':colValue', $colValue);
+                $this->execute();
+            }
+        }
+}
+
+    /** Get Department State:
+     * @param string $colName Column name for identification
+     * @param mixed  $colValue Value for identification
+     * @return array|null
+     */
+    public function getDepartmentState($colName, $colValue) {
+        $this->query('SELECT supprimer FROM ' . $this->departmentTable . '
+                  WHERE ' . $colName . ' = :colValue');
+
+        $this->bind(':colValue', $colValue);
+        $result = $this->stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $result;
+    }
 
 //        if (!empty($_POST['search']['value'])) {
 //            $this->stmt .= ' WHERE id LIKE "%' . $_POST["search"]["value"] . '%"
@@ -97,9 +139,6 @@ class Department extends Database {
 //            echo 'this array is empty';
 //        }
 
-
-
-
 //    public function getDepartmentDetails() {
 //        if($this->departmentId) {
 //            $this->stmt = $this->dbh->prepare("
@@ -112,7 +151,8 @@ class Department extends Database {
 }
 $database = new Database();
 $depa = new Department();
-$name = $depa->listDepartment();
+$name = $depa->listDepartments();
 print_r($name);
-$depa->update('name', "Testing", 'id', 2);
+$depa->update('name', 'Testing', 'id', 2);
+$depa->softDeleteDepartmentByName('name', 'Testing');
 print_r($name);
