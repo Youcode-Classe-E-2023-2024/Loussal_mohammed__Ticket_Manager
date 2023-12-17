@@ -27,15 +27,15 @@ class Database
         }
     }
 
-    /** Method to execute a query
-     * @param $sql
+    /** Method to execute a query:
+     * @param sql $sql
      * @return void
      */
     public function query($sql) {
         $this->stmt = $this->dbh->prepare($sql);
     }
 
-    /** Method to bind parameters
+    /** Method to bind parameters:
      * @param $param
      * @param $value
      * @param $type
@@ -60,30 +60,32 @@ class Database
         $this->stmt->bindValue($param, $value, $type);
     }
 
-    /** Method to execute the prepared statement
+    /** Method to execute the prepared statement:
      * @return mixed
      */
     public function execute() {
         return $this->stmt->execute();
     }
 
-    /** Check For Column Existence And Validation
+    /** Check For Column Existence And Validation:
      * @param $valueCol string
-     * @param $identifierCol string
      * @return int
      * @throws Exception
      */
-    public function checkParam($valueCol, $identifierCol) {
-        $allowedColumns = ['name', 'status', 'id'];
-        if (!in_array($valueCol, $allowedColumns) || !ctype_alnum($valueCol) ||
-            !in_array($identifierCol, $allowedColumns) || !ctype_alnum($identifierCol)) {
-            throw new Exception("Your column should exist in the table columns and consist of alphanumeric characters");
+    public function checkParam(...$valueCol) {
+        $allowedColumns = ['name', 'status', 'id', 'supprimer'];
+
+        // Allow alphanumeric characters and underscores in column names
+        foreach ($valueCol as $col){
+            if (!in_array($col, $allowedColumns) || !preg_match('/^[a-zA-Z0-9_]+$/', $col)) {
+                throw new Exception("Your column should exist in the table columns and consist of alphanumeric characters");
+            }
         }
 
         return 1;
     }
 
-    /** Method to fetch a single row
+    /** Method to fetch a single row:
      * @return mixed
      */
     public function single() {
@@ -91,7 +93,7 @@ class Database
         return $this->stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /** Method to fetch all rows
+    /** Method to fetch all rows:
      * @return mixed
      */
     public function resultSet() {
@@ -99,7 +101,7 @@ class Database
         return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Method to get the row count
+    /** Method to get the row count:
      * @return mixed
      */
     public function rowCount() {
