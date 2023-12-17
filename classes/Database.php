@@ -27,12 +27,20 @@ class Database
         }
     }
 
-    // Method to execute a query
+    /** Method to execute a query
+     * @param $sql
+     * @return void
+     */
     public function query($sql) {
         $this->stmt = $this->dbh->prepare($sql);
     }
 
-    // Method to bind parameters
+    /** Method to bind parameters
+     * @param $param
+     * @param $value
+     * @param $type
+     * @return void
+     */
     public function bind($param, $value, $type = null) {
         if (is_null($type)) {
             switch (true) {
@@ -52,7 +60,9 @@ class Database
         $this->stmt->bindValue($param, $value, $type);
     }
 
-    // Method to execute the prepared statement
+    /** Method to execute the prepared statement
+     * @return mixed
+     */
     public function execute() {
         return $this->stmt->execute();
     }
@@ -73,19 +83,25 @@ class Database
         return 1;
     }
 
-    // Method to fetch a single row
+    /** Method to fetch a single row
+     * @return mixed
+     */
     public function single() {
         $this->execute();
         return $this->stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Method to fetch all rows
+    /** Method to fetch all rows
+     * @return mixed
+     */
     public function resultSet() {
         $this->execute();
         return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Method to get the row count
+    /** Method to get the row count
+     * @return mixed
+     */
     public function rowCount() {
         return $this->stmt->rowCount();
     }
