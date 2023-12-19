@@ -16,6 +16,7 @@ class Department extends Database {
         return $departments;
     }
 
+
     /** ADD New Department:
      * @param string $name
      * @param int $status
@@ -38,6 +39,7 @@ class Department extends Database {
      * @throws Exception
      */
     public function update($valueCol, $value, $identifierCol, $identifier) {
+        $this->allowedColumns = ['name', 'status', 'id'];
         $paramValidation = $this->checkParam($valueCol, $identifierCol);
         if($paramValidation) {
             $this->query('UPDATE '. $this->departmentTable .'
@@ -56,14 +58,13 @@ class Department extends Database {
      */
     public function softDeleteDepartment($colName, $colValue) {
     // Check Params Validation
+     $this->allowedColumns = ['name', 'status'];
     $paramValidation = $this->checkParam($colName);
     // Check if the department is already deleted
     $existingState = $this->getDepartmentState($colName, $colValue);
 
         if ($paramValidation === 1) {
             if ($existingState === false) {
-            // Handle the case where the department doesn't exist
-            // (you might throw an exception or handle it as needed)
             } elseif (!$existingState['supprimer']) {
                 $this->query('UPDATE ' . $this->departmentTable . '
                           SET supprimer = true
@@ -89,6 +90,7 @@ class Department extends Database {
 
         return $result;
     }
+
 
 //        if (!empty($_POST['search']['value'])) {
 //            $this->stmt .= ' WHERE id LIKE "%' . $_POST["search"]["value"] . '%"
@@ -149,10 +151,9 @@ class Department extends Database {
 //        }
 //    }
 }
-$database = new Database();
-$depa = new Department();
-$name = $depa->listDepartments();
+$department = new Department();
+$name = $department->listDepartments();
 print_r($name);
-$depa->update('name', 'Testing', 'id', 2);
-$depa->softDeleteDepartment('id', '2');
+$department->update('name', 'Testing', 'id', 2);
+$department->softDeleteDepartment('id', '2');
 print_r($name);

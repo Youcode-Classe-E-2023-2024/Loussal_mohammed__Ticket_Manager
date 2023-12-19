@@ -11,6 +11,8 @@ class Database
     protected $stmt;
     protected $error;
 
+    protected $allowedColumns;
+
     public function __construct() {
         $dsn = 'mysql:host='. $this->dbHost .';dbname='. $this->dbName;
         $options = array(
@@ -73,11 +75,9 @@ class Database
      * @throws Exception
      */
     public function checkParam(...$valueCol) {
-        $allowedColumns = ['name', 'status', 'id', 'supprimer'];
-
         // Allow alphanumeric characters and underscores in column names
         foreach ($valueCol as $col){
-            if (!in_array($col, $allowedColumns) || !preg_match('/^[a-zA-Z0-9_]+$/', $col)) {
+            if (!in_array($col, $this->allowedColumns) || !preg_match('/^[a-zA-Z]{1,20}+$/', $col)) {
                 throw new Exception("Your column should exist in the table columns and consist of alphanumeric characters");
             }
         }
@@ -108,3 +108,4 @@ class Database
         return $this->stmt->rowCount();
     }
 }
+$database = new Database();
