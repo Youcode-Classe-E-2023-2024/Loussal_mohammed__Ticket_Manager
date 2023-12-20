@@ -4,22 +4,17 @@
 
     <div class="signup">
         <form action="../controllers/signup.controller.php" method="post">
-            <label for="chk" aria-hidden="true">Sign up</label>
-            <input type="text" name="txt" placeholder="User name" required="">
+            <label for="" aria-hidden="true">Sign up</label>
+            <input type="text" name="name" placeholder="Name" required="">
             <input type="email" name="email" placeholder="Email" required="">
-            <input type="password" name="pswd" placeholder="Password" required="">
-            <button>Sign up</button>
+            <input type="password" name="password" placeholder="Password" required="" value="" >
+
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required="">
+            <input type="submit" name="submit" value="Sign up">
         </form>
     </div>
 
-    <div class="login">
-        <form action="../controllers/login.controller.php" method="post">
-            <label for="chk" aria-hidden="true">Login</label>
-            <input type="email" name="email" placeholder="Email" required="">
-            <input type="password" name="pswd" placeholder="Password" required="">
-            <button>Login</button>
-        </form>
-    </div>
+
 </div>
 <!--- Link JS File --->
 <script src="../js/signup.php"></script>
