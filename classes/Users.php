@@ -5,25 +5,6 @@ class Users extends Database
 {
     private $usersTable = "hd_users";
 
-    /** SignUp USER:
-     * @param $data
-     * @return bool
-     */
-    public function register($data){
-        $this->db->query('INSERT INTO users (name, email, password) VALUES(:name, :email, :password)');
-        // Bind values
-        $this->db->bind(':name', $data['name']);
-        $this->db->bind(':email', $data['email']);
-        $this->db->bind(':password', $data['password']);
-
-        // Execute
-        if($this->db->execute()){
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     /** Login USER:
      * @param $email
      * @param $password
@@ -50,7 +31,7 @@ class Users extends Database
     public function listAllUsers() {
         $this->query('SELECT * From '. $this->usersTable);
         $this->execute();
-        $users = $this->stmt->fetch(PDO::FETCH_ASSOC);
+        $users = $this->resultSet();
         if ($users !== null) {
         }
         return $users;
@@ -68,7 +49,7 @@ class Users extends Database
             $this->query('SELECT * From '. $this->usersTable .' WHERE '. $colName .' = :colValue');
             $this->bind(':colValue', $colValue);
             $this->execute();
-            $users = $this->stmt->fetch(PDO::FETCH_ASSOC);
+            $users = $this->single();
             if ($users !== null) {
             }
             return $users;
@@ -83,9 +64,15 @@ class Users extends Database
      * @throws Exception
      */
     public function addUser($email, $password, $name) {
+        // Checking If Email Already Exists:
+        $emailCheck = $this->emailExistance($email);
+        if(!empty($emailCheck)) {
+            header('Location:../html/');
+        }
+        $hashedPassword = hash('sha256', $password);
         $this->query('INSERT INTO '. $this->usersTable .' (email, password, name) VALUES (:email, :password, :name);');
         $this->bind('email', $email);
-        $this->bind(':password', $password);
+        $this->bind(':password', $hashedPassword);
         $this->bind('name', $name);
         $this->execute();
     }
@@ -112,6 +99,53 @@ class Users extends Database
             $this->execute();
         }
     }
+
+    /** Check If Email Already Exists:
+     * @param string $email
+     * @return mixed
+     */
+    public function emailExistance($email) {
+        $this->query("SELECT * FROM ". $this->usersTable ." WHERE email = :email");
+        $this->bind(':email', $email);
+        $this->execute();
+        return $this->single();
+    }
+
+    /** Email Validate:
+     * @param string $email
+     * @return bool
+     */
+    public function emailValidate($email) {
+        if(!filter_var($email, FILTER_SANITIZE_EMAIL) || !preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/", $email)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /** Validate Name:
+     * @param string $name
+     * @return bool
+     */
+    public function nameValidate($name) {
+        if(!filter_var($name, FILTER_SANITIZE_FULL_SPECIAL_CHARS || !preg_match("/^[a-z A-Z]{10,30}$/", $name))) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /** Validate Password:
+     * @param string $password
+     * @return bool
+     */
+    public function passwordValidate($password) {
+        $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/';
+        if(!filter_var($password, FILTER_SANITIZE_STRING || !preg_match($pattern, $password)) || !strlen($password)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
-$users = new Users();
 
