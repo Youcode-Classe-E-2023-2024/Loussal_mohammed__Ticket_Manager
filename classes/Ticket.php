@@ -11,7 +11,7 @@ class Ticket extends Database
     {
         $this->query('SELECT * FROM ' .$this->ticketTable .' WHERE supprimer = false');
         $this->execute();
-        $departments = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+        $departments = $this->resultSet();
 
         return $departments;
     }
@@ -86,7 +86,7 @@ class Ticket extends Database
                   WHERE ' . $colName . ' = :colValue');
 
         $this->bind(':colValue', $colValue);
-        $result = $this->stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $this->single();
 
         return $result;
     }
