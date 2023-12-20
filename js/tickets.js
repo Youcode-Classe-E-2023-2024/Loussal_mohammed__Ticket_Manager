@@ -40,23 +40,28 @@ $(document).ready(function() {
 				},
 			],
 			"pageLength": 10
-		});			
+		});
 		$(document).on('submit','#ticketForm', function(event){
-			event.preventDefault();
+				event.preventDefault();
 			$('#save').attr('disabled','disabled');
 			var formData = $(this).serialize();
-			$.ajax({
-				url:"ticket_action.php",
+				$.ajax({
+					url:"ticket_action.php",
 				method:"POST",
-				data:formData,
-				success:function(data){				
+					data:formData,
+					success:function(data){				
 					$('#ticketForm')[0].reset();
 					$('#ticketModal').modal('hide');				
 					$('#save').attr('disabled', false);
 					ticketData.ajax.reload();
 				}
-			})
-		});			
+				})
+			});
+		});
+
+
+
+
 		$(document).on('click', '.update', function(){
 			var ticketId = $(this).attr("id");
 			var action = 'getTicketDetails';

@@ -7,7 +7,11 @@ class Tickets extends Database {
 	private $dbConnect = false;
 	public function __construct(){		
         $this->dbConnect = $this->dbConnect();
-    } 
+    }
+
+    /** Show Tickets:
+     * @return void
+     */
 	public function showTickets(){
 		$sqlWhere = '';	
 		if(!isset($_SESSION["admin"])) {
@@ -75,25 +79,63 @@ class Tickets extends Database {
 			"data"    			=> 	$ticketData
 		);
 		echo json_encode($output);
-	}	
+	}
+
+    /** Get Replied Title:
+     * @param $title
+     * @return string
+     */
 	public function getRepliedTitle($title) {
 		$title = $title.'<span class="answered">Answered</span>';
 		return $title; 		
 	}
-	public function createTicket() {      
-		if(!empty($_POST['subject']) && !empty($_POST['message'])) {                
-			$date = new DateTime();
-			$date = $date->getTimestamp();
-			$uniqid = uniqid();                
-			$message = strip_tags($_POST['subject']);              
-			$queryInsert = "INSERT INTO ".$this->ticketTable." (uniqid, user, title, init_msg, department, date, last_reply, user_read, admin_read, resolved) 
-			VALUES('".$uniqid."', '".$_SESSION["userid"]."', '".$_POST['subject']."', '".$message."', '".$_POST['department']."', '".$date."', '".$_SESSION["userid"]."', 0, 0, '".$_POST['status']."')";			
-			mysqli_query($this->dbConnect, $queryInsert);			
-			echo 'success ' . $uniqid;
-		} else {
-			echo '<div class="alert error">Please fill in all fields.</div>';
-		}
-	}	
+
+    /** Create Ticket:
+     * @param array $selectedDepartments
+     * @return void
+     */
+    public function createTicket() {
+        if (!empty($_POST['subject']) && !empty($_POST['message']) && isset($_POST['departments']) && is_array($_POST['departments']) && !empty($_POST['departments'])) {
+            $date = new DateTime();
+            $date = $date->getTimestamp();
+            $uniqid = uniqid();
+            $message = strip_tags($_POST['subject']);
+            $queryInsert = "INSERT INTO ".$this->ticketTable." (uniqid, user, title, init_msg, date, last_reply, user_read, admin_read, resolved) 
+            VALUES('".$uniqid."', '".$_SESSION["userid"]."', '".$_POST['subject']."', '".$message."', '".$date."', '".$_SESSION["userid"]."', 0, 0, '".$_POST['status']."')";
+
+            // Insert ticket into the main ticket table
+            $result = mysqli_query($this->dbConnect, $queryInsert);
+
+            if ($result) {
+                // Get the ID of the last inserted ticket
+                $ticketId = mysqli_insert_id($this->dbConnect);
+
+                // Insert selected departments into the ticket_departments table
+                foreach ($_POST['departments'] as $departmentId) {
+                    $queryInsertDepartment = "INSERT INTO hd_ticket_departments (ticket_id, department_id) VALUES ('$ticketId', '$departmentId')";
+                    $resultDepartment = mysqli_query($this->dbConnect, $queryInsertDepartment);
+
+                    if (!$resultDepartment) {
+                        die('Error inserting into hd_ticket_departments table: ' . mysqli_error($this->dbConnect));
+                    }
+                }
+
+                echo 'success ' . $uniqid;
+            } else {
+                die('Error inserting into hd_tickets table: ' . mysqli_error($this->dbConnect));
+            }
+        } else {
+            echo '<div class="alert error">Please fill in all fields.</div>';
+        }
+    }
+
+
+
+
+
+    /** Get Ticket Details:
+     * @return void
+     */
 	public function getTicketDetails(){
 		if($_POST['ticketId']) {	
 			$sqlQuery = "
@@ -104,6 +146,10 @@ class Tickets extends Database {
 			echo json_encode($row);
 		}
 	}
+
+    /** Update Ticket:
+     * @return void
+     */
 	public function updateTicket() {
 		if($_POST['ticketId']) {	
 			$updateQuery = "UPDATE ".$this->ticketTable." 
@@ -111,7 +157,11 @@ class Tickets extends Database {
 			WHERE id ='".$_POST["ticketId"]."'";
 			$isUpdated = mysqli_query($this->dbConnect, $updateQuery);		
 		}	
-	}		
+	}
+
+    /** Close Ticket:
+     * @return void
+     */
 	public function closeTicket(){
 		if($_POST["ticketId"]) {
 			$sqlDelete = "UPDATE ".$this->ticketTable." 
@@ -119,14 +169,23 @@ class Tickets extends Database {
 				WHERE id = '".$_POST["ticketId"]."'";		
 			mysqli_query($this->dbConnect, $sqlDelete);		
 		}
-	}	
+	}
+
+    /** Get Departments:
+     * @return void
+     */
 	public function getDepartments() {       
 		$sqlQuery = "SELECT * FROM ".$this->departmentsTable;
 		$result = mysqli_query($this->dbConnect, $sqlQuery);
 		while($department = mysqli_fetch_assoc($result) ) {       
             echo '<option value="' . $department['id'] . '">' . $department['name']  . '</option>';           
         }
-    }	    
+    }
+
+    /** Ticket Info:
+     * @param int $id
+     * @return array|false|null
+     */
     public function ticketInfo($id) {  		
 		$sqlQuery = "SELECT t.id, t.uniqid, t.title, t.user, t.init_msg as message, t.date, t.last_reply, t.resolved, u.name as creater, d.name as department 
 			FROM ".$this->ticketTable." t 
@@ -136,7 +195,11 @@ class Tickets extends Database {
 		$result = mysqli_query($this->dbConnect, $sqlQuery);
         $tickets = mysqli_fetch_assoc($result);
         return $tickets;        
-    }    
+    }
+
+    /** Save Ticket Replies:
+     * @return void
+     */
 	public function saveTicketReplies () {
 		if($_POST['message']) {
 			$date = new DateTime();
@@ -149,7 +212,12 @@ class Tickets extends Database {
 				WHERE id = '".$_POST['ticketId']."'";				
 			mysqli_query($this->dbConnect, $updateTicket);
 		} 
-	}	
+	}
+
+    /** Get Ticket Replies:
+     * @param int $id
+     * @return array
+     */
 	public function getTicketReplies($id) {  		
 		$sqlQuery = "SELECT r.id, r.text as message, r.date, u.name as creater, d.name as department, u.user_type  
 			FROM ".$this->ticketRepliesTable." r
@@ -164,6 +232,11 @@ class Tickets extends Database {
 		}
         return $data;
     }
+
+    /** Update Ticket Read Status:
+     * @param int $ticketId
+     * @return void
+     */
 	public function updateTicketReadStatus($ticketId) {
 		$updateField = '';
 		if(isset($_SESSION["admin"])) {

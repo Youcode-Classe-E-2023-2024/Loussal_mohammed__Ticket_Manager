@@ -7,7 +7,11 @@ class Department extends Database {
 	private $dbConnect = false;
 	public function __construct(){		
         $this->dbConnect = $this->dbConnect();
-    } 
+    }
+
+    /** List Department:
+     * @return void
+     */
 	public function listDepartment(){
 			 			 
 		$sqlQuery = "SELECT id, name, status
@@ -54,9 +58,12 @@ class Department extends Database {
 			"data"    			=> 	$departmentData
 		);
 		echo json_encode($output);
-	}	
-	
-		
+	}
+
+
+    /** Get Department Details:
+     * @return void
+     */
 	public function getDepartmentDetails(){		
 		if($this->departmentId) {		
 			$sqlQuery = "
@@ -68,7 +75,10 @@ class Department extends Database {
 			echo json_encode($row);
 		}		
 	}
-	
+
+    /** Insert:
+     * @return void
+     */
 	public function insert() {      
 		if($this->department) {		              
 			$this->department = strip_tags($this->department);              
@@ -78,6 +88,9 @@ class Department extends Database {
 		}
 	}
 
+    /** Update:
+     * @return void
+     */
 	public function update() {      
 		if($this->departmentId && $this->department) {		              
 			$this->department = strip_tags($this->department);              
@@ -87,8 +100,11 @@ class Department extends Database {
 				WHERE id = '".$this->departmentId."'";				
 			mysqli_query($this->dbConnect, $queryUpdate);			
 		}
-	}	
-	
+	}
+
+    /** Delete:
+     * @return void
+     */
 	public function delete() {      
 		if($this->departmentId) {		          
 			$queryUpdate = "

@@ -1,5 +1,9 @@
 <?php
-class Database {    
+class Database {
+
+    /** Connect To The DataBase
+     * @return mysqli|void|null
+     */
     public function dbConnect() {        
         static $DBH = null;      
         if (is_null($DBH)) {              

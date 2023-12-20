@@ -13,7 +13,7 @@
 					</div>
 					<div class="form-group">
 						<label for="department" class="control-label">Department</label>							
-						<select id="department" name="department" class="form-control" placeholder="Department..." multiple>					
+						<select id="department" name="department[]" class="form-control" placeholder="Department..." multiple>
 							<?php $tickets->getDepartments(); ?>
 						</select>						
 					</div>						

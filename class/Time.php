@@ -3,7 +3,12 @@ class Time extends Database {
     private $dbConnect = false;
 	public function __construct(){		
         $this->dbConnect = $this->dbConnect();
-    }	
+    }
+
+    /** Time:
+     * @param $time
+     * @return string
+     */
     public function ago($time) {
         $periods = array("second", "minute", "hour", "day", "week", "month", "year", "decade");
         $lengths = array("60","60","24","7","4.35","12","10");

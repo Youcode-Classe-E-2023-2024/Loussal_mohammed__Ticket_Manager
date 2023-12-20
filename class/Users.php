@@ -4,7 +4,11 @@ class Users extends Database {
 	private $dbConnect = false;
 	public function __construct(){		
         $this->dbConnect = $this->dbConnect();
-    }	
+    }
+
+    /** Check If User Is Logged In:
+     * @return bool
+     */
 	public function isLoggedIn () {
 		if(isset($_SESSION["userid"])) {
 			return true; 			
@@ -12,6 +16,10 @@ class Users extends Database {
 			return false;
 		}
 	}
+
+    /** Login:
+     * @return string
+     */
 	public function login(){		
 		$errorMessage = '';
 		if(!empty($_POST["login"]) && $_POST["email"]!=''&& $_POST["password"]!='') {	
@@ -36,8 +44,12 @@ class Users extends Database {
 		} else if(!empty($_POST["login"])){
 			$errorMessage = "Enter Both user and password!";	
 		}
-		return $errorMessage; 		
+		return $errorMessage;
 	}
+
+    /** Get User Info:
+     * @return array|false|void|null
+     */
 	public function getUserInfo() {
 		if(!empty($_SESSION["userid"])) {
 			$sqlQuery = "SELECT * FROM ".$this->userTable." 
@@ -47,6 +59,12 @@ class Users extends Database {
 			return $userDetails;
 		}		
 	}
+
+    /** Get Coloumn:
+     * @param int $id
+     * @param string $column
+     * @return mixed
+     */
 	public function getColoumn($id, $column) {     
         $sqlQuery = "SELECT * FROM ".$this->userTable." 
 			WHERE id ='".$id."'";
@@ -54,8 +72,10 @@ class Users extends Database {
 		$userDetails = mysqli_fetch_assoc($result);
 		return $userDetails[$column];       
     }
-	
-	
+
+    /** List User:
+     * @return void
+     */
 	public function listUser(){
 			 			 
 		$sqlQuery = "SELECT id, name, email, create_date, user_type, status 
@@ -112,9 +132,11 @@ class Users extends Database {
 			"data"    			=> 	$userData
 		);
 		echo json_encode($output);
-	}	
-	
-	
+	}
+
+    /** Get User Details:
+     * @return void
+     */
 	public function getUserDetails(){	
 		if($this->id) {		
 			$sqlQuery = "
@@ -126,7 +148,10 @@ class Users extends Database {
 			echo json_encode($row);
 		}		
 	}
-	
+
+    /** Insert:
+     * @return void
+     */
 	public function insert() {      
 		if($this->userName && $this->email) {		              
 			$this->userName = strip_tags($this->userName);			
@@ -136,8 +161,11 @@ class Users extends Database {
 				'".$this->userName."', '".$this->email."', '".$this->role."','".$this->status."', '".$this->newPassword."')";				
 			mysqli_query($this->dbConnect, $queryInsert);			
 		}
-	}	
-	
+	}
+
+    /** Update:
+     * @return void
+     */
 	public function update() {      
 		if($this->updateUserId && $this->userName) {		              
 			$this->userName = strip_tags($this->userName);
@@ -154,8 +182,11 @@ class Users extends Database {
 				WHERE id = '".$this->updateUserId."'";				
 			mysqli_query($this->dbConnect, $queryUpdate);			
 		}
-	}	
-	
+	}
+
+    /** Delete:
+     * @return void
+     */
 	public function delete() {      
 		if($this->deleteUserId) {		          
 			$queryUpdate = "
