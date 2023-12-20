@@ -108,4 +108,3 @@ class Database
         return $this->stmt->rowCount();
     }
 }
-$database = new Database();
