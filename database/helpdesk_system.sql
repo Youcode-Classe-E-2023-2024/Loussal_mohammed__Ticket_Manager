@@ -104,6 +104,25 @@ INSERT INTO `hd_ticket_replies` (`id`, `user`, `text`, `ticket_id`, `date`) VALU
 (6, 1, 'I am looking into this', '5', '1635519340'),
 (7, 2, 'ewtewt', '6', '1635519418');
 
+-- ---------------------------------------------------------- --------------------------------------------------------
+
+--
+-- Table structure for table `hd_ticket_departments`
+--
+
+-- Table structure for table `hd_ticket_departments`
+CREATE TABLE `hd_ticket_departments` (
+    `ticket_id` int(11) NOT NULL,
+    `department_id` int(11) NOT NULL,
+    PRIMARY KEY (`ticket_id`, `department_id`),
+    FOREIGN KEY (`ticket_id`) REFERENCES `hd_tickets`(`id`),
+    FOREIGN KEY (`department_id`) REFERENCES `hd_departments`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Modify `hd_tickets` table
+ALTER TABLE `hd_tickets` DROP COLUMN `department`;
+
+
 -- --------------------------------------------------------
 
 --
