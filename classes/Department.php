@@ -11,7 +11,7 @@ class Department extends Database {
     {
         $this->query('SELECT * FROM ' .$this->departmentTable .' WHERE supprimer = false');
         $this->execute();
-        $departments = $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+        $departments = $this->resultSet();
 
         return $departments;
     }
@@ -86,7 +86,7 @@ class Department extends Database {
                   WHERE ' . $colName . ' = :colValue');
 
         $this->bind(':colValue', $colValue);
-        $result = $this->stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $this->single();
 
         return $result;
     }
@@ -151,9 +151,3 @@ class Department extends Database {
 //        }
 //    }
 }
-$department = new Department();
-$name = $department->listDepartments();
-print_r($name);
-$department->update('name', 'Testing', 'id', 2);
-$department->softDeleteDepartment('id', '2');
-print_r($name);
