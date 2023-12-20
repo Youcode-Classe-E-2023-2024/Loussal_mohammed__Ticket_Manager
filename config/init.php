@@ -1,6 +1,6 @@
 <?php
-function loader($class) {
-    require "../classes/{$class}.php";
+function loader($model) {
+    require "../models/{$model}.php";
 }
 spl_autoload_register('loader');
 
