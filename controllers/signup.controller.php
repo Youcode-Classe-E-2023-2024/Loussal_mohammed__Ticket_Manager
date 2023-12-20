@@ -20,8 +20,7 @@ if($_POST['submit']) {
     } elseif(!$users->comparePassword($password, $confirm_password)) {
         header('Location: ../html/signup.php?error=passwordDoNotMatch');
     } else {
-        $hashedPassword = hash('sha256', $password);
-        $users->addUser($email, $hashedPassword, $name);
+        $users->addUser($email, $password, $name);
         header('Location: ../html/login.php');
     }
 

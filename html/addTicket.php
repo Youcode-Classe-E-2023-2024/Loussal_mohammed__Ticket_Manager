@@ -14,7 +14,7 @@
                     <div class="form-group">
                         <label for="department" class="control-label" multiple>Department</label>
                         <select id="department" name="department" class="form-control" placeholder="Department..." multiple>
-                            <?php $tickets->getDepartments(); ?>
+                            <?php include_once '../config/init.php'; include_once '../config/config.php'; global $users; $users->listAllUsers(); ?>
                         </select>
                     </div>
                     <div class="form-group">

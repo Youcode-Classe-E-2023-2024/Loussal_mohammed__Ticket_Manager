@@ -1,4 +1,8 @@
 <?php include_once '../inc/header.php';?>
+<link rel="stylesheet" href="../css/style.css">
+<title>Sign up</title>
+</head>
+<body>
 <div class="main">
     <input type="checkbox" id="chk" aria-hidden="true">
 
@@ -16,6 +20,13 @@
 
 
 </div>
+<div class="insert-post-ads1" style="margin-top:20px;">
+
+</div>
+</div>
 <!--- Link JS File --->
 <script src="../js/signup.php"></script>
 <?php  include_once '../inc/footer.php'; ?>
+</body>
+</html>
+

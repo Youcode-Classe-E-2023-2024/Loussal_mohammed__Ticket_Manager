@@ -1,11 +1,15 @@
 <?php
+include_once '../controllers/login.controller.php';
+session_start();
 global $users;
 if(!$users->isLoggedIn()) {
     header('Location: login.php');
 }
 include_once '../inc/header.php';
-$user = $users->listUser();
+$userList = $users->listUser('email', $_SESSION['userEmail']);
 ?>
+<title>Helpdesk System with PHP & MySQL</title>
+<link rel="stylesheet" href="../css/dataTables.bootstrap.min.css" />
 <div class="container">
     <div class="row home-sections">
         <h2>Helpdesk System</h2>
@@ -41,6 +45,11 @@ $user = $users->listUser();
             </thead>
         </table>
     </div>
-    <?php include('add_ticket_model.php'); ?>
+    <?php include('addTicketModel.php'); ?>
 </div>
+
+<script src="js/general.js"></script>
+<script src="js/tickets.js"></script>
+<script src="js/jquery.dataTables.min.js"></script>
+<script src="js/dataTables.bootstrap.min.js"></script>
 <?php include_once ('../inc/footer.php');?>

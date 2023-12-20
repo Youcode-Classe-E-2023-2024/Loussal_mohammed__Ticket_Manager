@@ -1,4 +1,8 @@
 <?php include_once '../inc/header.php';?>
+<link rel="stylesheet" href="../css/style.css">
+<title>Sign up</title>
+</head>
+<body>
 <div class="main">
     <input type="checkbox" id="chk" aria-hidden="true">
 

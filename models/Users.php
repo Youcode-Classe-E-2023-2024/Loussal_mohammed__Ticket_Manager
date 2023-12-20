@@ -1,181 +1,168 @@
 <?php
-require_once '../config/config.php';
-require_once 'Database.php';
-class Users extends Database
-{
-    private $usersTable = "hd_users";
-
-    /** Check If User Is Logged In:
-     * @return bool
-     */
-    public function isLoggedIn() {
-        if(isset($_SESSION['userId']) && !is_null($_SESSION['userId'])) {
-            return true;
-        } else {
-            return false;
-        }
+class Users extends Database { 
+	private $userTable = 'hd_users';
+	private $dbConnect = false;
+	public function __construct(){		
+        $this->dbConnect = $this->dbConnect();
+    }	
+	public function isLoggedIn () {
+		if(isset($_SESSION["userid"])) {
+			return true; 			
+		} else {
+			return false;
+		}
+	}
+	public function login(){		
+		$errorMessage = '';
+		if(!empty($_POST["login"]) && $_POST["email"]!=''&& $_POST["password"]!='') {	
+			$email = $_POST['email'];
+			$password = $_POST['password'];
+			$sqlQuery = "SELECT * FROM ".$this->userTable." 
+				WHERE email='".$email."' AND password='".md5($password)."' AND status = 1";
+				
+			$resultSet = mysqli_query($this->dbConnect, $sqlQuery);
+			$isValidLogin = mysqli_num_rows($resultSet);	
+			if($isValidLogin){
+				$userDetails = mysqli_fetch_assoc($resultSet);
+				$_SESSION["userid"] = $userDetails['id'];
+				$_SESSION["user_name"] = $userDetails['name'];
+				if($userDetails['user_type'] == 'admin') {
+					$_SESSION["admin"] = 1;
+				}
+				header("location: ticket.php"); 		
+			} else {		
+				$errorMessage = "Invalid login!";		 
+			}
+		} else if(!empty($_POST["login"])){
+			$errorMessage = "Enter Both user and password!";	
+		}
+		return $errorMessage; 		
+	}
+	public function getUserInfo() {
+		if(!empty($_SESSION["userid"])) {
+			$sqlQuery = "SELECT * FROM ".$this->userTable." 
+				WHERE id ='".$_SESSION["userid"]."'";
+			$result = mysqli_query($this->dbConnect, $sqlQuery);		
+			$userDetails = mysqli_fetch_assoc($result);
+			return $userDetails;
+		}		
+	}
+	public function getColoumn($id, $column) {     
+        $sqlQuery = "SELECT * FROM ".$this->userTable." 
+			WHERE id ='".$id."'";
+		$result = mysqli_query($this->dbConnect, $sqlQuery);		
+		$userDetails = mysqli_fetch_assoc($result);
+		return $userDetails[$column];       
     }
+	
+	
+	public function listUser(){
+			 			 
+		$sqlQuery = "SELECT id, name, email, create_date, user_type, status 
+			FROM ".$this->userTable;
+			
+		if(!empty($_POST["search"]["value"])){
+			$sqlQuery .= ' (id LIKE "%'.$_POST["search"]["value"].'%" ';					
+			$sqlQuery .= ' OR name LIKE "%'.$_POST["search"]["value"].'%" ';
+			$sqlQuery .= ' OR status LIKE "%'.$_POST["search"]["value"].'%" ';					
+		}
+		if(!empty($_POST["order"])){
+			$sqlQuery .= ' ORDER BY '.$_POST['order']['0']['column'].' '.$_POST['order']['0']['dir'].' ';
+		} else {
+			$sqlQuery .= ' ORDER BY id DESC ';
+		}
+		if($_POST["length"] != -1){
+			$sqlQuery .= ' LIMIT ' . $_POST['start'] . ', ' . $_POST['length'];
+		}	
+		
+		$result = mysqli_query($this->dbConnect, $sqlQuery);
+		$numRows = mysqli_num_rows($result);
+		$userData = array();	
+		while( $user = mysqli_fetch_assoc($result) ) {		
+			$userRows = array();			
+			$status = '';
+			if($user['status'] == 1)	{
+				$status = '<span class="label label-success">Active</span>';
+			} else if($user['status'] == 0) {
+				$status = '<span class="label label-danger">Inactive</span>';
+			}	
+			
+			$userRole = '';
+			if($user['user_type'] == 'admin')	{
+				$userRole = '<span class="label label-danger">Admin</span>';
+			} else if($user['user_type'] == 'user') {
+				$userRole = '<span class="label label-warning">Member</span>';
+			}	
+			
+			$userRows[] = $user['id'];
+			$userRows[] = $user['name'];
+			$userRows[] = $user['email'];
+			$userRows[] = $user['create_date'];
+			$userRows[] = $userRole;			
+			$userRows[] = $status;
+				
+			$userRows[] = '<button type="button" name="update" id="'.$user["id"].'" class="btn btn-warning btn-xs update">Edit</button>';
+			$userRows[] = '<button type="button" name="delete" id="'.$user["id"].'" class="btn btn-danger btn-xs delete">Delete</button>';
+			$userData[] = $userRows;
+		}
+		$output = array(
+			"draw"				=>	intval($_POST["draw"]),
+			"recordsTotal"  	=>  $numRows,
+			"recordsFiltered" 	=> 	$numRows,
+			"data"    			=> 	$userData
+		);
+		echo json_encode($output);
+	}	
+	
+	
+	public function getUserDetails(){	
+		if($this->id) {		
+			$sqlQuery = "
+				SELECT id, name, email, password, create_date, user_type, status 
+				FROM ".$this->userTable." 
+				WHERE id = '".$this->id."'";
+			$result = mysqli_query($this->dbConnect, $sqlQuery);	
+			$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+			echo json_encode($row);
+		}		
+	}
+	
+	public function insert() {      
+		if($this->userName && $this->email) {		              
+			$this->userName = strip_tags($this->userName);			
+			$this->newPassword = md5($this->newPassword);			
+			$queryInsert = "
+				INSERT INTO ".$this->userTable."(name, email, user_type, status, password) VALUES(
+				'".$this->userName."', '".$this->email."', '".$this->role."','".$this->status."', '".$this->newPassword."')";				
+			mysqli_query($this->dbConnect, $queryInsert);			
+		}
+	}	
+	
+	public function update() {      
+		if($this->updateUserId && $this->userName) {		              
+			$this->userName = strip_tags($this->userName);
 
-    /** Login USER:
-     * @param string $email
-     * @param string $password
-     * @return false
-     */
-    public function login($email, $password){
-        $this->query('SELECT * FROM '. $this->usersTable .' WHERE email = :email');
-        $this->bind(':email', $email);
-
-        $row = $this->single();
-
-        if(password_verify($password, $row['password'])){
-            return $row;
-        } else {
-            return false;
-        }
-    }
-
-
-    /** List All USERS:
-     * @return mixed
-     */
-    public function listAllUsers() {
-        $this->query('SELECT * From '. $this->usersTable);
-        $this->execute();
-        $users = $this->resultSet();
-        if ($users !== null) {
-        }
-        return $users;
-    }
-
-    /** List
-     * @param $colName
-     * @param $colValue
-     * @return void
-     * @throws Exception
-     */
-    public function listUser($colName, $colValue) {
-        // Check Param Validation
-        if($this->checkParam($colName)) {
-            $this->query('SELECT * From '. $this->usersTable .' WHERE '. $colName .' = :colValue');
-            $this->bind(':colValue', $colValue);
-            $this->execute();
-            $users = $this->single();
-            if ($users !== null) {
-            }
-            return $users;
-        }
-    }
-
-    /** ADD New User:
-     * @param string $email
-     * @param string $password
-     * @param string $name
-     * @return void
-     * @throws Exception
-     */
-    public function addUser($email, $password, $name) {
-        // Checking If Email Already Exists:
-        $emailCheck = $this->emailExistance($email);
-        if(!empty($emailCheck)) {
-            header('Location:../html/');
-        }
-        $hashedPassword = hash('sha256', $password);
-        $this->query('INSERT INTO '. $this->usersTable .' (email, password, name) VALUES (:email, :password, :name);');
-        $this->bind('email', $email);
-        $this->bind(':password', $hashedPassword);
-        $this->bind('name', $name);
-        $this->execute();
-    }
-
-    public function updateUser($valueCol, $value, $identifierCol, $identifier) {
-        $this->allowedColumns = ['email', 'name', 'password', 'id'];
-        $paramValidation = $this->checkParam($valueCol, $identifierCol);
-        if($paramValidation) {
-            $this->query('UPDATE '. $this->usersTable.'
-                        SET '. $valueCol .' = :value 
-                        WHERE '. $identifierCol .' = :identifier');
-            $this->bind(':value', $value);
-            $this->bind(':identifier', $identifier);
-            $this->execute();
-        }
-    }
-
-    public function deleteUser($identifierCol, $identifier) {
-        $this->allowedColumns = ['email', 'name', 'password', 'id'];
-        $paramValidation = $this->checkParam($identifierCol);
-        if($paramValidation) {
-            $this->query('DELETE FROM '. $this->usersTable .' WHERE '. $identifierCol .' = :identifier');
-            $this->bind(':identifier', $identifier);
-            $this->execute();
-        }
-    }
-
-    /** Check If Email Already Exists:
-     * @param string $email
-     * @return mixed
-     */
-    public function emailExistance($email) {
-        $this->query("SELECT * FROM ". $this->usersTable ." WHERE email = :email");
-        $this->bind(':email', $email);
-        $this->execute();
-        return $this->single();
-    }
-
-    /** Email Validate:
-     * @param string $email
-     * @return bool
-     */
-    public function emailValidate($email) {
-        if(!filter_var($email, FILTER_SANITIZE_EMAIL) || !preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/", $email)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /** Validate Name:
-     * @param string $name
-     * @return bool
-     */
-    public function nameValidate($name) {
-        if (!filter_var($name, FILTER_SANITIZE_FULL_SPECIAL_CHARS) || !preg_match("/^[a-zA-Z ]+$/", $name) || strlen($name) < 8) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-
-    /** Validate Password:
-     * @param string $password
-     * @return bool
-     */
-    public function passwordValidate($password) {
-        // Remove any HTML or PHP tags from the input
-        $password = strip_tags($password);
-
-        // Define the pattern for a strong password
-        $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/';
-
-        // Check the conditions separately
-        if (filter_var($password, FILTER_SANITIZE_STRING) && preg_match($pattern, $password) && strlen($password) >= 8) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /** Check If Password Match ConfPass
-     * @param $password
-     * @param $confirmPassword
-     * @return bool
-     */
-    public function comparePassword($password, $confirmPassword) {
-        if($password === $confirmPassword) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+			$changePassword = '';
+			if($this->newPassword) {
+				$this->newPassword = md5($this->newPassword);
+				$changePassword = ", password = '".$this->newPassword."'";
+			}
+			
+			$queryUpdate = "
+				UPDATE ".$this->userTable." 
+				SET name = '".$this->userName."', email = '".$this->email."', user_type = '".$this->role."', status = '".$this->status."' $changePassword
+				WHERE id = '".$this->updateUserId."'";				
+			mysqli_query($this->dbConnect, $queryUpdate);			
+		}
+	}	
+	
+	public function delete() {      
+		if($this->deleteUserId) {		          
+			$queryUpdate = "
+				DELETE FROM ".$this->userTable." 
+				WHERE id = '".$this->deleteUserId."'";				
+			mysqli_query($this->dbConnect, $queryUpdate);			
+		}
+	}
+	
 }
-
