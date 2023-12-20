@@ -55,7 +55,7 @@ CREATE TABLE `hd_tickets` (
   `id` int(11) NOT NULL,
   `uniqid` varchar(20) NOT NULL,
   `user` int(11) NOT NULL,
-  `title` varchar(250) NOT NULL,
+  `tag` varchar(250) NOT NULL,
   `init_msg` text NOT NULL,
   `department` int(11) NOT NULL,
   `date` varchar(250) NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE `hd_tickets` (
 -- Dumping data for table `hd_tickets`
 --
 
-INSERT INTO `hd_tickets` (`id`, `uniqid`, `user`, `title`, `init_msg`, `department`, `date`, `last_reply`, `user_read`, `admin_read`, `resolved`) VALUES
+INSERT INTO `hd_tickets` (`id`, `uniqid`, `user`, `tag`, `init_msg`, `department`, `date`, `last_reply`, `user_read`, `admin_read`, `resolved`) VALUES
 (1, '617181b83c1e7', 1, 'System is not working', 'System is not working', 1, '1634828728', 1, 0, 1, 1),
 (2, '61718394c0ad5', 2, 'There are some issue!!!!', 'There are some issue!!', 1, '1634829204', 2, 1, 0, 1),
 (3, '617bfaa5ce86d', 1, 'zfsafsaf', 'zfsafsaf', 2, '1635515045', 1, 0, 0, 0),
@@ -128,6 +128,21 @@ INSERT INTO `hd_users` (`id`, `email`, `password`, `create_date`, `name`, `user_
 (1, 'admin@webdamn.com', '202cb962ac59075b964b07152d234b70', '2021-10-25 23:24:33', 'Kane Wiliam ', 'admin', 1),
 (2, 'smith@webdamn.com', '202cb962ac59075b964b07152d234b70', '2021-10-25 23:24:46', 'Jhon Smith', 'user', 1);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hd_department_tickets`
+--
+
+CREATE TABLE `hd_department_tickets` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `department_id` int(11) NOT NULL,
+    `ticket_id` int(11) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_user_ticket` (`user_id`, `ticket_id`),
+    CONSTRAINT `fk_user_ticket_user` FOREIGN KEY (`department_id`) REFERENCES `hd_departments` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_user_ticket_ticket` FOREIGN KEY (`ticket_id`) REFERENCES `hd_tickets` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 --
 -- Indexes for dumped tables
 --

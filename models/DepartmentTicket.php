@@ -1,6 +1,6 @@
 <?php
 
-class departmentTicket
+class departmentTicket extends Department
 {
 
 }
